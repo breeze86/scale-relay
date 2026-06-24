@@ -149,7 +149,26 @@ Secret: <generated-secret>
 scale-relay config init
 ```
 
+初始化会先写入临时设备占位信息。S400 的真实 `MAC`、`BLE KEY`、型号和名称不需要在这里手动填写，后续第 6 步会通过 `xiaomi extract-key --write-config` 自动写入。
+
 初始化阶段如果选择 `hermes_webhook`，需要填入上一步 Hermes 返回的 webhook URL 和 secret。
+
+如果初始化时先选择了 `stdout`，或者当时还没有 Hermes webhook 信息，后续需要编辑 `config.yaml`，把 `sink` 改为 Hermes 返回的 URL 和 Secret：
+
+```yaml
+sink:
+  type: "hermes_webhook"
+  url: "http://127.0.0.1:8644/webhooks/scale-relay-weight"
+  secret: "<hermes webhook subscribe 返回的 Secret>"
+  event_type: "weight_measurement"
+  intent: "analyze_and_notify"
+  timeout_seconds: 10
+  retry:
+    attempts: 3
+    backoff_seconds: 2
+```
+
+如果 Hermes gateway 不在本机，把 `127.0.0.1` 换成 Hermes gateway 所在机器的实际 IP，例如 `192.168.10.240`。
 
 校验配置：
 
