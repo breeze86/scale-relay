@@ -153,6 +153,8 @@ scale-relay config init
 
 初始化阶段如果选择 `hermes_webhook`，需要填入上一步 Hermes 返回的 webhook URL 和 secret。
 
+`Output target / sink type` 默认是 `hermes_webhook`。如果已经按第 2 步创建了 Hermes webhook，直接回车即可；如果只是想先本地验证 BLE 采集链路，输入 `stdout`。
+
 如果初始化时先选择了 `stdout`，或者当时还没有 Hermes webhook 信息，后续需要编辑 `config.yaml`，把 `sink` 改为 Hermes 返回的 URL 和 Secret：
 
 ```yaml

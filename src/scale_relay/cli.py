@@ -137,7 +137,7 @@ def _config_init(_: argparse.Namespace) -> int:
     history_storage_path = _prompt("History storage path", "data/measurements.sqlite3")
     prompt_text = PromptConfig().text
     print("using default prompt.text; edit config.yaml if you need a different analysis intent")
-    sink_type = _prompt("Sink type", "stdout")
+    sink_type = _prompt("Output target / sink type (hermes_webhook or stdout)", "hermes_webhook")
     if sink_type not in {"stdout", "hermes_webhook"}:
         raise ScaleRelayError("Sink type must be stdout or hermes_webhook")
 
