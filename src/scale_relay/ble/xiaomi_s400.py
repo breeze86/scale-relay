@@ -37,13 +37,14 @@ class XiaomiS400Listener:
         started_at = time.time()
         target_mac = self._device.mac.upper()
         last_found_log_at = 0.0
+        last_incomplete_log_at = 0.0
 
         decryption_handler = _DecryptionFailedHandler(stop_event)
         xiaomi_logger = logging.getLogger("xiaomi_ble.parser")
         xiaomi_logger.addHandler(decryption_handler)
 
         def detection_callback(device: Any, advertisement_data: Any) -> None:
-            nonlocal last_found_log_at
+            nonlocal last_found_log_at, last_incomplete_log_at
             try:
                 if stop_event.is_set():
                     return
@@ -83,6 +84,12 @@ class XiaomiS400Listener:
                     return
                 update = parser.update(service_info)
                 measurement = self._measurement_from_update(update)
+                if measurement is None and now - last_incomplete_log_at >= 15:
+                    LOGGER.info(
+                        "S400 advertisement parsed but no complete measurement yet %s",
+                        _describe_update(update),
+                    )
+                    last_incomplete_log_at = now
                 if measurement and self._should_emit(measurement):
                     LOGGER.info(
                         "Complete S400 measurement parsed weight_kg=%.1f impedance_high=%s impedance_low=%s",
@@ -286,3 +293,17 @@ def _binary_entity_values(update: Any) -> dict[str, Any]:
     if not update or not update.binary_entity_values:
         return {}
     return {value.name: value.native_value for value in update.binary_entity_values.values()}
+
+
+def _describe_update(update: Any) -> str:
+    values = _entity_values(update)
+    binary_values = _binary_entity_values(update)
+    required = {
+        "Mass": values.get("Mass"),
+        "Impedance High": values.get("Impedance High", values.get("Impedance")),
+        "Impedance Low": values.get("Impedance Low"),
+        "Stabilized": binary_values.get("Stabilized"),
+    }
+    available = [name for name, value in required.items() if value is not None]
+    missing = [name for name, value in required.items() if value is None]
+    return f"available={available} missing={missing}"

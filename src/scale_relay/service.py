@@ -8,6 +8,7 @@ import logging
 from scale_relay.ble.xiaomi_s400 import XiaomiS400Listener
 from scale_relay.config import AppConfig
 from scale_relay.doctor import log_ble_environment_check
+from scale_relay.errors import MeasurementTimeoutError
 from scale_relay.events import build_measurement_event
 from scale_relay.history.store import MeasurementHistoryStore
 from scale_relay.sinks.factory import create_sink
@@ -39,15 +40,18 @@ async def run_listen(config: AppConfig) -> None:
     sink = create_sink(config.sink)
     history_store = _create_history_store(config)
     while True:
-        async for measurement in listener.listen():
-            if history_store:
-                history_store.add(measurement, config.profile)
-            event = build_measurement_event(
-                measurement=measurement,
-                config=config,
-                history_store=history_store,
-            )
-            await sink.send(event)
+        try:
+            async for measurement in listener.listen():
+                if history_store:
+                    history_store.add(measurement, config.profile)
+                event = build_measurement_event(
+                    measurement=measurement,
+                    config=config,
+                    history_store=history_store,
+                )
+                await sink.send(event)
+        except MeasurementTimeoutError as exc:
+            LOGGER.warning("%s; restarting BLE scan", exc)
         await asyncio.sleep(0.5)
 
 

@@ -2,6 +2,7 @@ import unittest
 
 from scale_relay.ble.xiaomi_s400 import (
     XiaomiS400Listener,
+    _describe_update,
     _matches_target_device,
     _normalize_service_data,
     _to_str,
@@ -69,6 +70,13 @@ class XiaomiS400ListenerTests(unittest.TestCase):
     def test_measurement_requires_impedance(self):
         update = FakeUpdate({"Mass": 48.9, "Impedance Low": 462.0}, {"Stabilized": True})
         self.assertIsNone(self.listener()._measurement_from_update(update))
+
+    def test_describes_incomplete_update(self):
+        update = FakeUpdate({"Mass": 48.9, "Impedance Low": 462.0}, {"Stabilized": True})
+        description = _describe_update(update)
+        self.assertIn("Mass", description)
+        self.assertIn("Impedance Low", description)
+        self.assertIn("Impedance High", description)
 
     def test_matches_macos_s400_name_and_fe95_suffix(self):
         config = DeviceConfig(
