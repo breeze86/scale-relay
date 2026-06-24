@@ -144,7 +144,10 @@ def _config_init(_: argparse.Namespace) -> int:
     webhook_url = None
     webhook_secret = None
     if sink_type == "hermes_webhook":
-        webhook_url = _prompt("Hermes Webhook URL", "http://127.0.0.1:8644/webhooks/events")
+        webhook_url = _prompt(
+            "Hermes Webhook URL",
+            "http://127.0.0.1:8644/webhooks/scale-relay-weight",
+        )
         webhook_secret = getpass.getpass("Hermes Webhook secret (hidden): ").strip()
 
     config = AppConfig(
