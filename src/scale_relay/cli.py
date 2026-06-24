@@ -14,6 +14,7 @@ from scale_relay.ble.xiaomi_s400 import debug_scan_ble
 from scale_relay.config import (
     AppConfig,
     DeviceConfig,
+    HEX32_RE,
     HistoryConfig,
     ListenConfig,
     PromptConfig,
@@ -128,12 +129,7 @@ def _config_init(_: argparse.Namespace) -> int:
     name = _prompt("Device name", "Xiaomi Body Composition Scale S400")
     model = _prompt("Device model", "yunmai.scales.ms104")
     mac = _prompt("Device MAC (leave empty to use temporary placeholder)", "00:00:00:00:00:00")
-    ble_key = getpass.getpass(
-        "BLE KEY (32 hex chars, hidden; leave empty to use temporary placeholder): "
-    ).strip()
-    if not ble_key:
-        ble_key = "0" * 32
-        print("using temporary BLE KEY placeholder; run xiaomi extract-key --write-config later")
+    ble_key = _prompt_ble_key()
     hci = int(_prompt("BLE adapter index", "0"))
     user_id = _prompt("Profile user_id", "default")
     gender = _prompt("Profile gender", "female")
@@ -283,6 +279,19 @@ def _prompt(label: str, default: str | None = None) -> str:
     if default is not None:
         return default
     raise ScaleRelayError(f"{label} is required")
+
+
+def _prompt_ble_key() -> str:
+    while True:
+        ble_key = getpass.getpass(
+            "BLE KEY (32 hex chars, hidden; leave empty to use temporary placeholder): "
+        ).strip()
+        if not ble_key:
+            print("using temporary BLE KEY placeholder; run xiaomi extract-key --write-config later")
+            return "0" * 32
+        if HEX32_RE.match(ble_key):
+            return ble_key
+        print("invalid BLE KEY: expected exactly 32 hex characters; press Enter to use placeholder")
 
 
 def _configure_logging(level_name: str) -> None:
