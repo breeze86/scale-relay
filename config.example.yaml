@@ -1,0 +1,54 @@
+xiaomi:
+  region: cn
+
+device:
+  type: xiaomi_s400
+  name: "Xiaomi Body Composition Scale S400"
+  model: "yunmai.scales.ms104"
+  mac: "E3:2B:13:0A:37:D9"
+  ble_key: "0123456789abcdef0123456789abcdef"
+  hci: 0
+  # Optional. Only needed when macOS exposes a stable CoreBluetooth UUID and
+  # automatic S400 matching is not enough.
+  # ble_address: "B40914D1-8EB7-DB31-5F1A-9C10FDCD8015"
+
+listen:
+  scan_timeout_seconds: 180
+  cooldown_seconds: 10
+
+profile:
+  user_id: "jj"
+  gender: "male"
+  height_cm: 170
+
+history:
+  enabled: true
+  storage_path: "data/measurements.sqlite3"
+  recent_measurements_limit: 21
+  statistics_days: 30
+  include_weekly_series: true
+
+prompt:
+  text: |
+    目标用户正在进行减脂体重管理，目标是在保证健康和生活可持续的前提下，逐步降低体重并保持稳定习惯。
+
+    请结合本次称重数据、最近称重记录、最近 30 天统计和每周趋势，分析本次体重变化。
+    输出适合微信阅读的简短中文消息。
+
+    要求：
+    1. 重点关注体重变化趋势、波动是否正常、是否需要调整节奏。
+    2. 可以给出饮食、运动、作息和称重习惯等日常建议。
+    3. 不要做医疗诊断。
+    4. 如果历史数据不足，请明确说明暂时无法判断长期趋势。
+    5. 不要鼓励极端节食、过度运动或短期快速减重。
+
+sink:
+  type: hermes_webhook
+  url: "http://127.0.0.1:8644/webhooks/scale-relay-weight"
+  secret: "<hermes webhook subscribe 返回的 HMAC secret>"
+  event_type: "weight_measurement"
+  intent: "analyze_and_notify"
+  timeout_seconds: 10
+  retry:
+    attempts: 3
+    backoff_seconds: 2
