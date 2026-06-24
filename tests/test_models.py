@@ -18,7 +18,7 @@ class ModelTests(unittest.TestCase):
         )
         self.assertEqual(
             measurement.request_id(),
-            "scale-relay:xiaomi_s400:E41B430C12D2:1782205025:48.9:428:462",
+            "scale-relay:xiaomi_s400:E32B130A37D9:1782205025:48.9:428:462",
         )
 
     def test_invalid_weight(self):

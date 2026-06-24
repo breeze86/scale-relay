@@ -246,7 +246,7 @@ Hermes delivery channel，例如 weixin
 Scale Relay 职责：
 
 - 发送结构化事件。
-- 发送前构造 `message + payload.current + payload.history`。
+- 发送前构造 `message + payload_schema + payload.current + payload.history`。
 - 做 HMAC-SHA256 签名。
 - 设置稳定 `X-Request-ID`。
 - 处理超时、重试和非 2xx。
@@ -279,7 +279,11 @@ Scale Relay 发送事件：
   "event_type": "weight_measurement",
   "source": "scale-relay",
   "intent": "analyze_and_notify",
-  "message": "prompt.text + 本次称重摘要 + 历史摘要",
+  "payload_schema": {
+    "name": "scale_relay.weight_measurement",
+    "version": "1.0"
+  },
+  "message": "用户业务意图 + 本次摘要 + 历史摘要 + 数据说明 + 输出要求",
   "profile": {
     "user_id": "jj",
     "gender": "male",
@@ -380,7 +384,7 @@ prompt:
   text: |
     目标用户正在进行减脂体重管理。
 
-    请结合本次称重数据、最近称重记录、统计摘要和每周趋势，分析本次体重变化。
+    请分析本次体重变化。
     输出适合目标渠道阅读的简短中文消息。
 
 sink:

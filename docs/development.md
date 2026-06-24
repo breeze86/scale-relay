@@ -432,7 +432,11 @@ Scale Relay 发送通用事件：
   "event_type": "weight_measurement",
   "source": "scale-relay",
   "intent": "analyze_and_notify",
-  "message": "目标用户是一名孕妇...\\n\\n本次称重摘要...\\n\\n历史数据摘要...",
+  "payload_schema": {
+    "name": "scale_relay.weight_measurement",
+    "version": "1.0"
+  },
+  "message": "用户分析意图...\\n\\n本次称重摘要...\\n\\n历史数据摘要...\\n\\n数据说明...\\n\\n输出要求...",
   "profile": {
     "user_id": "jj",
     "gender": "female",
@@ -464,7 +468,7 @@ Scale Relay 发送通用事件：
 }
 ```
 
-`message` 由 Scale Relay 在服务端根据 `prompt.text`、`profile`、`payload.current` 和 `payload.history` 拼接，并包含 BMI、均值、差值、每周聚合等确定性计算结果。真正发送渠道仍由 Hermes route 的 `deliver` 配置决定。
+`message` 由 Scale Relay 在服务端拼接：用户业务意图来自 `prompt.text`，本次摘要、历史摘要、数据说明、历史阅读规则和输出要求由代码内置生成。`message` 不要求用户了解 payload 字段名。真正发送渠道仍由 Hermes 动态订阅的 `--deliver` 配置决定。
 
 请求头：
 
@@ -550,8 +554,8 @@ prompt:
   text: |
     目标用户是一名孕妇，孕期起始日期为：2026-04-22。
 
-    请结合本次称重数据、最近称重记录、最近 30 天统计和每周趋势，分析本次体重变化。
-    输出适合微信阅读的简短中文消息。
+    请分析本次体重变化，输出适合微信阅读的简短中文消息。
+    不要做医疗诊断。
 
 sink:
   type: stdout

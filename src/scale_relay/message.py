@@ -15,7 +15,7 @@ def build_weight_message(
     prompt_text: str,
     history: dict[str, Any] | None = None,
 ) -> str:
-    lines = [prompt_text.strip(), "", "本次称重摘要："]
+    lines = ["用户分析意图：", prompt_text.strip(), "", "本次称重摘要："]
 
     if profile.gender:
         lines.append(f"- 性别：{_gender_label(profile.gender)}")
@@ -66,6 +66,15 @@ def build_weight_message(
     lines.extend(
         [
             "",
+            "数据说明：",
+            "- payload.current 是本次完整称重数据。",
+            "- payload.history.records 是最近原始称重记录。",
+            "- payload.history.statistics 是程序计算的统计摘要。",
+            "- payload.history.weekly_series 是按周聚合趋势。",
+            "- weight_kg 和 BMI 是主要体重分析依据。",
+            "- impedance_high / impedance_low 是阻抗数据，可作为参考；不要仅凭阻抗做体脂率、水肿或健康风险的确定性判断。",
+            "- heart_rate 为 null 表示当前没有解析到心率，不要分析心率。",
+            "",
             "历史数据阅读规则：",
             "- payload.history.records 按时间升序排列。",
             "- interval_from_previous_minutes 表示该记录距离上一条记录的分钟数。",
@@ -73,8 +82,9 @@ def build_weight_message(
             "- 如果相邻记录间隔较短，尤其是同一天多次称重，请将其视为短时波动参考，不要直接当作长期趋势。",
             "- 趋势判断应优先结合 payload.history.statistics 和 payload.history.weekly_series。",
             "",
-            "请优先参考 payload.current 和 payload.history 中的结构化数据。",
-            "不要输出原始 JSON，除非需要排查异常。",
+            "输出要求：",
+            "- 请优先参考 payload.current 和 payload.history 中的结构化数据。",
+            "- 不要输出原始 JSON，除非需要排查异常。",
         ]
     )
     return "\n".join(lines)

@@ -24,6 +24,10 @@ def build_measurement_event(
         "event_type": config.sink.event_type,
         "source": "scale-relay",
         "intent": config.sink.intent,
+        "payload_schema": {
+            "name": "scale_relay.weight_measurement",
+            "version": "1.0",
+        },
         "message": build_weight_message(
             measurement=measurement,
             profile=config.profile,

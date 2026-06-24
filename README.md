@@ -224,6 +224,67 @@ scale-relay --log-level INFO --config config.yaml listen
 scale-relay --log-level INFO --config config.yaml listen --sink stdout
 ```
 
+### 9. Ubuntu 使用 systemd 后台长期运行
+
+Ubuntu / Debian / PVE 长期运行建议使用 `systemd` 托管。项目提供了安装脚本，会安装：
+
+- `systemd` service：负责开机自启、异常重启、后台运行。
+- `logrotate` 配置：日志写入 `/var/log/scale-relay/scale-relay.log`，单个文件最大约 `10MB`，最多保留 `3` 个日志文件，总量约 `30MB`。
+
+部署机器需要已经安装 `logrotate`。Ubuntu / Debian 通常默认包含；如果没有，先安装：
+
+```bash
+sudo apt install -y logrotate
+```
+
+先确认配置可用：
+
+```bash
+scale-relay --config config.yaml config validate
+scale-relay --config config.yaml doctor
+```
+
+安装并启用服务：
+
+```bash
+sudo ./scripts/install-systemd-service.sh
+```
+
+启动服务：
+
+```bash
+sudo systemctl start scale-relay
+```
+
+查看状态：
+
+```bash
+sudo systemctl status scale-relay
+```
+
+查看日志：
+
+```bash
+tail -f /var/log/scale-relay/scale-relay.log
+```
+
+停止服务：
+
+```bash
+sudo systemctl stop scale-relay
+```
+
+安装脚本默认使用当前项目目录下的 `config.yaml` 和 `.venv/bin/scale-relay`。如果你的路径不同，可以通过环境变量覆盖：
+
+```bash
+sudo env CONFIG_PATH=/home/your-user/scale-relay/config.yaml \
+  SCALE_RELAY_BIN=/home/your-user/scale-relay/.venv/bin/scale-relay \
+  SERVICE_USER=your-user \
+  ./scripts/install-systemd-service.sh
+```
+
+如果机器上有多个蓝牙适配器，仍然通过 `config.yaml` 的 `device.hci` 控制。
+
 ## 配置示例
 
 完整示例见 [config.example.yaml](config.example.yaml)。
@@ -240,7 +301,7 @@ scale-relay --log-level INFO --config config.yaml listen --sink stdout
 - `history.recent_measurements_limit`：每次发送给 Hermes 的最近原始称重记录数量。
 - `history.statistics_days`：统计摘要的时间窗口，单位是天。
 - `history.include_weekly_series`：是否附带按周聚合后的历史趋势。
-- `prompt.text`：发给 Hermes 的分析意图和输出要求。孕妇、减脂、普通体重管理等场景都建议通过这里表达。
+- `prompt.text`：用户业务意图。只需要描述分析目标和场景，不需要写 payload 字段说明；Scale Relay 会自动补充本次摘要、历史摘要、数据说明和输出要求。
 - `sink.secret`：Hermes Webhook route secret，用于 HMAC 签名。
 
 ## Hermes Agent 对接说明
@@ -268,11 +329,12 @@ Scale Relay 发送给 Hermes 的事件包含：
 - `source`
 - `intent`
 - `message`
+- `payload_schema`
 - `profile`
 - `payload`
 - `sent_at`
 
-其中 `message` 由 `prompt.text`、本次称重摘要和历史摘要组成；`payload.current` 是本次完整称重数据，`payload.history` 包含最近记录、统计摘要、每周趋势和数据质量标记。
+其中 `message` 由用户业务意图、本次称重摘要、历史摘要、内置数据说明和输出要求组成；`payload_schema` 标识结构版本；`payload.current` 是本次完整称重数据，`payload.history` 包含最近记录、统计摘要、每周趋势和数据质量标记。
 
 注意：
 
@@ -371,7 +433,11 @@ scale-relay debug scan-ble --seconds 30
   "event_type": "weight_measurement",
   "source": "scale-relay",
   "intent": "analyze_and_notify",
-  "message": "目标用户正在进行减脂体重管理...",
+  "payload_schema": {
+    "name": "scale_relay.weight_measurement",
+    "version": "1.0"
+  },
+  "message": "用户分析意图...\n\n本次称重摘要...\n\n历史数据摘要...\n\n数据说明...\n\n输出要求...",
   "profile": {
     "user_id": "jj",
     "gender": "male",

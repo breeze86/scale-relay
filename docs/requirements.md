@@ -175,8 +175,8 @@ prompt:
   text: |
     目标用户是一名孕妇，孕期起始日期为：2026-04-22。
 
-    请结合本次称重数据、最近称重记录、最近 30 天统计和每周趋势，分析本次体重变化。
-    输出适合微信阅读的简短中文消息。
+    请分析本次体重变化，输出适合微信阅读的简短中文消息。
+    不要做医疗诊断。
 
 sink:
   type: stdout
@@ -397,7 +397,11 @@ Scale Relay 发送的事件结构为：
   "event_type": "weight_measurement",
   "source": "scale-relay",
   "intent": "analyze_and_notify",
-  "message": "目标用户是一名孕妇...\\n\\n本次称重摘要...\\n\\n历史数据摘要...",
+  "payload_schema": {
+    "name": "scale_relay.weight_measurement",
+    "version": "1.0"
+  },
+  "message": "用户分析意图...\\n\\n本次称重摘要...\\n\\n历史数据摘要...\\n\\n数据说明...\\n\\n输出要求...",
   "profile": {
     "user_id": "jj",
     "gender": "female",
@@ -444,7 +448,7 @@ Scale Relay 发送的事件结构为：
 
 Hermes profile 选择不由 Scale Relay 控制。Scale Relay 只发送到用户配置的 Hermes profile gateway URL。当前目标是已经启用 gateway 的 `jj` profile。
 
-Scale Relay 在服务端根据 `prompt.text`、本次称重和历史上下文拼好 `message`，并计算 BMI、均值、差值、每周聚合等确定性字段。真正发送渠道必须由 Hermes 动态订阅的 `--deliver` 指定，例如 `--deliver feishu`。
+Scale Relay 在服务端根据 `prompt.text`、本次称重和历史上下文拼好 `message`。`prompt.text` 只表达用户业务意图；Scale Relay 必须自动补充本次摘要、历史摘要、数据说明、历史阅读规则和输出要求，并计算 BMI、均值、差值、每周聚合等确定性字段。真正发送渠道必须由 Hermes 动态订阅的 `--deliver` 指定，例如 `--deliver feishu`。
 
 ### 5.8 通用发送层
 

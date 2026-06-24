@@ -80,7 +80,7 @@ class XiaomiS400ListenerTests(unittest.TestCase):
         )
         self.assertTrue(
             _matches_target_device(
-                FakeDevice("B40914D1-8EB7-DB31-5F1A-9C10FDCD8015", "Mijia Scale S400 12D2"),
+                FakeDevice("B40914D1-8EB7-DB31-5F1A-9C10FDCD8015", "Mijia Scale S400 37D9"),
                 FakeAdvertisementData({"0000fe95-0000-1000-8000-00805f9b34fb": b"abc"}),
                 config,
             )

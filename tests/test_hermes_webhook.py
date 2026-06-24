@@ -67,6 +67,8 @@ class HermesWebhookTests(unittest.TestCase):
             history_store=None,
         )
         self.assertEqual(event["event_type"], "weight_measurement")
+        self.assertEqual(event["payload_schema"]["name"], "scale_relay.weight_measurement")
+        self.assertEqual(event["payload_schema"]["version"], "1.0")
         self.assertEqual(event["payload"]["current"]["weight_kg"], 48.9)
         self.assertIn("history", event["payload"])
         self.assertNotIn("delivery", event)

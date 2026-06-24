@@ -1,0 +1,19 @@
+[Unit]
+Description=Scale Relay
+After=network-online.target bluetooth.service
+Wants=network-online.target bluetooth.service
+
+[Service]
+Type=simple
+User=__SERVICE_USER__
+Group=__SERVICE_GROUP__
+WorkingDirectory=__PROJECT_DIR__
+ExecStart=__SCALE_RELAY_BIN__ --log-level INFO --config __CONFIG_PATH__ listen
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+StandardOutput=append:__LOG_DIR__/scale-relay.log
+StandardError=append:__LOG_DIR__/scale-relay.log
+
+[Install]
+WantedBy=multi-user.target

@@ -20,6 +20,10 @@ class MessageTests(unittest.TestCase):
         self.assertIn("身高：165 cm", message)
         self.assertIn("体重：48.9 kg", message)
         self.assertIn("BMI：18.0", message)
+        self.assertIn("用户分析意图：", message)
+        self.assertIn("数据说明：", message)
+        self.assertIn("历史数据阅读规则：", message)
+        self.assertIn("输出要求：", message)
 
 
 if __name__ == "__main__":
