@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import sys
 import time
 from collections.abc import AsyncIterator
 from typing import Any
@@ -208,6 +209,27 @@ def _load_ble_dependencies() -> _BleDependencies:
 
 def _create_scanner(bleak_scanner: Any, detection_callback: Any, hci: int) -> Any:
     adapter = f"hci{hci}"
+    if sys.platform.startswith("linux"):
+        try:
+            scanner = bleak_scanner(
+                detection_callback=detection_callback,
+                scanning_mode="active",
+                bluez={
+                    "adapter": adapter,
+                    "filters": {
+                        "Transport": "le",
+                        "DuplicateData": True,
+                    },
+                },
+            )
+            LOGGER.info(
+                "BleakScanner created with adapter=%s scanning_mode=active duplicate_data=true",
+                adapter,
+            )
+            return scanner
+        except TypeError:
+            LOGGER.info("BleakScanner backend does not accept BlueZ args; trying adapter kwarg")
+
     try:
         scanner = bleak_scanner(detection_callback=detection_callback, adapter=adapter)
         LOGGER.info("BleakScanner created with adapter=%s", adapter)

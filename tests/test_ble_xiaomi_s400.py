@@ -2,6 +2,7 @@ import unittest
 
 from scale_relay.ble.xiaomi_s400 import (
     XiaomiS400Listener,
+    _create_scanner,
     _describe_update,
     _matches_target_device,
     _normalize_service_data,
@@ -119,6 +120,26 @@ class XiaomiS400ListenerTests(unittest.TestCase):
         self.assertEqual(_to_str(ObjcLikeString()), "0000fe95-0000-1000-8000-00805f9b34fb")
         normalized = _normalize_service_data({ObjcLikeString(): bytearray(b"abc")})
         self.assertEqual(normalized, {"0000fe95-0000-1000-8000-00805f9b34fb": b"abc"})
+
+    def test_linux_scanner_uses_bluez_duplicate_data(self):
+        import scale_relay.ble.xiaomi_s400 as module
+
+        calls = []
+
+        class FakeScanner:
+            def __init__(self, **kwargs):
+                calls.append(kwargs)
+
+        original_platform = module.sys.platform
+        module.sys.platform = "linux"
+        try:
+            _create_scanner(FakeScanner, lambda *_: None, 0)
+        finally:
+            module.sys.platform = original_platform
+
+        self.assertEqual(calls[0]["bluez"]["adapter"], "hci0")
+        self.assertTrue(calls[0]["bluez"]["filters"]["DuplicateData"])
+        self.assertEqual(calls[0]["bluez"]["filters"]["Transport"], "le")
 
 
 if __name__ == "__main__":

@@ -62,6 +62,7 @@ Linux 运行 BLE 监听通常还需要 BlueZ 相关组件。
 ```shell
 apt update
 apt install bluez -y
+apt install bluetooth -y
 ```
 
 如遇到问题可以参考原始实操记录见：
